@@ -23,6 +23,8 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [timeFrame, setTimeFrame] = useState('');
   const [timeFrameError, setTimeFrameError] = useState('');
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -83,11 +85,20 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
       setTimeFrameError('Please select a time frame.');
       return;
     }
+    if (timeFrame === 'custom' && (!customStart || !customEnd)) {
+      setTimeFrameError('Please select a start and end date.');
+      return;
+    }
     setTimeFrameError('');
-    onDataImport(previewData, timeFrame);
+    const timeFrameValue = timeFrame === 'custom'
+      ? { type: 'custom', start: customStart, end: customEnd }
+      : timeFrame;
+    onDataImport(previewData, timeFrameValue);
     setShowPreview(false);
     setPreviewData([]);
     setTimeFrame('');
+    setCustomStart('');
+    setCustomEnd('');
   };
 
   const cancelImport = () => {
@@ -207,11 +218,20 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
                 onChange={e => setTimeFrame(e.target.value)}
               >
                 <option value="">Select time frame</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
+                <option value="7days">Last 7 Days</option>
+                <option value="lastweek">Last Week</option>
+                <option value="thismonth">This Month</option>
+                <option value="lastmonth">Last Month</option>
+                <option value="thisyear">This Year</option>
                 <option value="custom">Custom</option>
               </select>
+              {timeFrame === 'custom' && (
+                <div className="flex gap-2 mt-2">
+                  <input type="date" className="border rounded px-2 py-1" value={customStart} onChange={e => setCustomStart(e.target.value)} />
+                  <span className="self-center">to</span>
+                  <input type="date" className="border rounded px-2 py-1" value={customEnd} onChange={e => setCustomEnd(e.target.value)} />
+                </div>
+              )}
               {timeFrameError && <div className="text-xs text-red-500 mt-1">{timeFrameError}</div>}
             </div>
 

@@ -18,21 +18,17 @@ const Stocks = () => {
   };
 
   const handleDataImport = (importedData: any[], timeFrame: string) => {
-    if (!validateProductCSV(importedData)) {
-      alert('Invalid product CSV format.');
-      return;
-    }
+    // No longer need to validate old columns
     // Map and sanitize data
     const sanitized = importedData.map(row => ({
-      ...row,
-      revenue: Number(row.revenue) || 0,
-      sessions: Number(row.sessions) || 0,
-      conversionRate: Number(row.conversionRate) || 0,
-      inventory: Number(row.inventory) || 0,
-      unitsSold: Number(row.unitsSold) || 0,
-      acos: Number(row.acos) || 0,
-      profit: (row.profit !== undefined && row.profit !== "") ? Number(row.profit) : (Number(row.revenue) - Number(row.acos || 0)),
-      status: row.status || "profitable",
+      productName: row['Product Name'] || '',
+      revenue: Number(row['Revenue']) || 0,
+      inventory: Number(row['Inventory']) || 0,
+      unitsSold: Number(row['Units Sold']) || 0,
+      profit: row['Profit'] !== undefined && row['Profit'] !== '' ? Number(row['Profit']) : (Number(row['Revenue']) - Number(row['Acos'] || 0)),
+      acos: Number(row['Acos']) || 0,
+      status: row['Status'] || 'profitable',
+      productLink: row['Product Link'] || '',
     }));
     setProducts(sanitized);
     setShowImport(false);
@@ -109,9 +105,9 @@ const Stocks = () => {
         {showImport && (
           <>
             <div className="mb-2 text-sm text-muted-foreground">
-              Required columns: name, sku, asin, revenue, sessions, conversionRate, inventory, unitsSold, acos
+              Required columns: Product Name, Revenue, Inventory, Units Sold, Acos, Product Link
             </div>
-            <CSVImport onDataImport={handleDataImport} validateCSV={validateProductCSV} templateHeaders={['name','sku','asin','revenue','sessions','conversionRate','inventory','unitsSold','acos']} templateName="Product" />
+            <CSVImport onDataImport={handleDataImport} templateHeaders={['Product Name','Revenue','Inventory','Units Sold','Acos','Product Link']} templateName="Product" />
           </>
         )}
 
