@@ -82,7 +82,15 @@ const Inventory = () => {
       alert('Invalid inventory CSV format.');
       return;
     }
-    setInventoryData(importedData);
+    // Map and sanitize data
+    const sanitized = importedData.map(row => ({
+      ...row,
+      stock: Number(row.stock) || 0,
+      inbound: Number(row.inbound) || 0,
+      velocity: Number(row.velocity) || 0,
+      status: row.status || 'healthy',
+    }));
+    setInventoryData(sanitized);
     setShowImport(false);
     alert('Inventory data imported successfully!');
   };
@@ -150,9 +158,9 @@ const Inventory = () => {
         {showImport && (
           <>
             <div className="mb-2 text-sm text-muted-foreground">
-              Required columns: sku, product, stock, status, inbound, velocity
+              Required columns: sku, product, stock, inbound, velocity
             </div>
-            <CSVImport onDataImport={handleDataImport} validateCSV={validateInventoryCSV} templateHeaders={['sku','product','stock','status','inbound','velocity']} templateName="Inventory" />
+            <CSVImport onDataImport={handleDataImport} validateCSV={validateInventoryCSV} templateHeaders={['sku','product','stock','inbound','velocity']} templateName="Inventory" />
           </>
         )}
 

@@ -135,10 +135,8 @@ export const parseCSV = (csvText: string): any[] => {
 
 export const validateSalesCSV = (data: any[]): boolean => {
   if (!data.length) return false;
-  
-  const requiredFields = ['date', 'revenue'];
+  const requiredFields = ['date', 'revenue', 'unitsSold', 'orders', 'conversionRate', 'averageOrderValue'];
   const firstRow = data[0];
-  
   return requiredFields.every(field => 
     Object.keys(firstRow).some(key => 
       key.toLowerCase().includes(field.toLowerCase())
@@ -148,7 +146,7 @@ export const validateSalesCSV = (data: any[]): boolean => {
 
 export const validateInventoryCSV = (data: any[]): boolean => {
   if (!data.length) return false;
-  const requiredFields = ['sku', 'product', 'stock', 'status', 'inbound', 'velocity'];
+  const requiredFields = ['sku', 'product', 'stock', 'inbound', 'velocity'];
   const firstRow = data[0];
   return requiredFields.every(field =>
     Object.keys(firstRow).some(key =>
@@ -159,7 +157,7 @@ export const validateInventoryCSV = (data: any[]): boolean => {
 
 export const validateProductCSV = (data: any[]): boolean => {
   if (!data.length) return false;
-  const requiredFields = ['name', 'sku', 'asin', 'revenue', 'sessions', 'conversionRate', 'inventory', 'unitsSold', 'profit', 'acos', 'status'];
+  const requiredFields = ['name', 'sku', 'asin', 'revenue', 'sessions', 'conversionRate', 'inventory', 'unitsSold', 'acos'];
   const firstRow = data[0];
   return requiredFields.every(field =>
     Object.keys(firstRow).some(key =>
@@ -170,7 +168,7 @@ export const validateProductCSV = (data: any[]): boolean => {
 
 export const validatePPCCampaignCSV = (data: any[]): boolean => {
   if (!data.length) return false;
-  const requiredFields = ['campaignName', 'campaignType', 'totalOrders', 'totalSales', 'tacos', 'spend', 'sales', 'acos', 'roas', 'impressions', 'clicks', 'cpc', 'cvr', 'ctr', 'ppcOrders', 'status'];
+  const requiredFields = ['campaignName', 'campaignType', 'totalOrders', 'totalSales', 'tacos', 'spend', 'sales', 'acos', 'roas', 'impressions', 'clicks', 'cpc', 'cvr', 'ctr', 'ppcOrders'];
   const firstRow = data[0];
   return requiredFields.every(field =>
     Object.keys(firstRow).some(key =>

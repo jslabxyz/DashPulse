@@ -22,7 +22,19 @@ const Stocks = () => {
       alert('Invalid product CSV format.');
       return;
     }
-    setProducts(importedData);
+    // Map and sanitize data
+    const sanitized = importedData.map(row => ({
+      ...row,
+      revenue: Number(row.revenue) || 0,
+      sessions: Number(row.sessions) || 0,
+      conversionRate: Number(row.conversionRate) || 0,
+      inventory: Number(row.inventory) || 0,
+      unitsSold: Number(row.unitsSold) || 0,
+      acos: Number(row.acos) || 0,
+      profit: (row.profit !== undefined && row.profit !== "") ? Number(row.profit) : (Number(row.revenue) - Number(row.acos || 0)),
+      status: row.status || "profitable",
+    }));
+    setProducts(sanitized);
     setShowImport(false);
     alert('Product data imported successfully!');
   };
@@ -95,9 +107,9 @@ const Stocks = () => {
         {showImport && (
           <>
             <div className="mb-2 text-sm text-muted-foreground">
-              Required columns: name, sku, asin, revenue, sessions, conversionRate, inventory, unitsSold, profit, acos, status
+              Required columns: name, sku, asin, revenue, sessions, conversionRate, inventory, unitsSold, acos
             </div>
-            <CSVImport onDataImport={handleDataImport} validateCSV={validateProductCSV} templateHeaders={['name','sku','asin','revenue','sessions','conversionRate','inventory','unitsSold','profit','acos','status']} templateName="Product" />
+            <CSVImport onDataImport={handleDataImport} validateCSV={validateProductCSV} templateHeaders={['name','sku','asin','revenue','sessions','conversionRate','inventory','unitsSold','acos']} templateName="Product" />
           </>
         )}
 

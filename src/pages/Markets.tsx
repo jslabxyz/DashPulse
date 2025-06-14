@@ -22,7 +22,25 @@ const Markets = () => {
       alert('Invalid PPC campaign CSV format.');
       return;
     }
-    setCampaigns(importedData);
+    // Map and sanitize data
+    const sanitized = importedData.map(row => ({
+      ...row,
+      totalOrders: Number(row.totalOrders) || 0,
+      totalSales: Number(row.totalSales) || 0,
+      tacos: Number(row.tacos) || 0,
+      spend: Number(row.spend) || 0,
+      sales: Number(row.sales) || 0,
+      acos: Number(row.acos) || 0,
+      roas: Number(row.roas) || 0,
+      impressions: Number(row.impressions) || 0,
+      clicks: Number(row.clicks) || 0,
+      cpc: Number(row.cpc) || 0,
+      cvr: Number(row.cvr) || 0,
+      ctr: Number(row.ctr) || 0,
+      ppcOrders: Number(row.ppcOrders) || 0,
+      status: row.status || 'Active',
+    }));
+    setCampaigns(sanitized);
     setShowImport(false);
     alert('PPC campaign data imported successfully!');
   };
@@ -100,9 +118,9 @@ const Markets = () => {
         {showImport && (
           <>
             <div className="mb-2 text-sm text-muted-foreground">
-              Required columns: campaignName, campaignType, totalOrders, totalSales, tacos, spend, sales, acos, roas, impressions, clicks, cpc, cvr, ctr, ppcOrders, status
+              Required columns: campaignName, campaignType, totalOrders, totalSales, tacos, spend, sales, acos, roas, impressions, clicks, cpc, cvr, ctr, ppcOrders
             </div>
-            <CSVImport onDataImport={handleDataImport} validateCSV={validatePPCCampaignCSV} templateHeaders={['campaignName','campaignType','totalOrders','totalSales','tacos','spend','sales','acos','roas','impressions','clicks','cpc','cvr','ctr','ppcOrders','status']} templateName="PPC" />
+            <CSVImport onDataImport={handleDataImport} validateCSV={validatePPCCampaignCSV} templateHeaders={['campaignName','campaignType','totalOrders','totalSales','tacos','spend','sales','acos','roas','impressions','clicks','cpc','cvr','ctr','ppcOrders']} templateName="PPC" />
           </>
         )}
 

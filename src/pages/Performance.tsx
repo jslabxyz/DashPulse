@@ -18,9 +18,21 @@ const Performance = () => {
       alert('Invalid sales CSV format.');
       return;
     }
+    // Map and sanitize data
+    const sanitized = importedData.map(row => ({
+      ...row,
+      revenue: Number(row.revenue) || 0,
+      unitsSold: Number(row.unitsSold) || 0,
+      orders: Number(row.orders) || 0,
+      conversionRate: Number(row.conversionRate) || 0,
+      averageOrderValue: Number(row.averageOrderValue) || 0,
+      profitMargin: row.profitMargin !== undefined && row.profitMargin !== "" ? Number(row.profitMargin) : 0,
+      returns: Number(row.returns) || 0,
+      refunds: Number(row.refunds) || 0,
+    }));
     setSalesData((prev) => ({
       ...prev,
-      dailySales: importedData
+      dailySales: sanitized
     }));
     setShowImport(false);
     alert('Sales data imported successfully!');
@@ -91,9 +103,9 @@ const Performance = () => {
         {showImport && (
           <>
             <div className="mb-2 text-sm text-muted-foreground">
-              Required columns: date, revenue, unitsSold, orders, conversionRate, averageOrderValue, profitMargin, returns, refunds
+              Required columns: date, revenue, unitsSold, orders, conversionRate, averageOrderValue
             </div>
-            <CSVImport onDataImport={handleDataImport} validateCSV={validateSalesCSV} templateHeaders={['date','revenue','unitsSold','orders','conversionRate','averageOrderValue','profitMargin','returns','refunds']} templateName="Sales" />
+            <CSVImport onDataImport={handleDataImport} validateCSV={validateSalesCSV} templateHeaders={['date','revenue','unitsSold','orders','conversionRate','averageOrderValue']} templateName="Sales" />
           </>
         )}
 
