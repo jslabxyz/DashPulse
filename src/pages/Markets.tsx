@@ -92,7 +92,12 @@ const Markets = () => {
 
         {/* CSV Import */}
         {showImport && (
-          <CSVImport onDataImport={handleDataImport} validateCSV={validatePPCCampaignCSV} templateHeaders={['campaignName','campaignType','totalOrders','totalSales','tacos','spend','sales','acos','roas','impressions','clicks','cpc','cvr','ctr','ppcOrders','status']} />
+          <>
+            <div className="mb-2 text-sm text-muted-foreground">
+              Required columns: campaignName, campaignType, totalOrders, totalSales, tacos, spend, sales, acos, roas, impressions, clicks, cpc, cvr, ctr, ppcOrders, status
+            </div>
+            <CSVImport onDataImport={handleDataImport} validateCSV={validatePPCCampaignCSV} templateHeaders={['campaignName','campaignType','totalOrders','totalSales','tacos','spend','sales','acos','roas','impressions','clicks','cpc','cvr','ctr','ppcOrders','status']} templateName="PPC" />
+          </>
         )}
 
         <PPCSummary campaigns={campaigns} />

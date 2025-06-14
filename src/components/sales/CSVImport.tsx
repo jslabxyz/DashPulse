@@ -9,10 +9,11 @@ interface CSVImportProps {
   onDataImport: (data: any[]) => void;
   validateCSV?: (data: any[]) => boolean;
   templateHeaders?: string[];
+  templateName?: string;
   className?: string;
 }
 
-export function CSVImport({ onDataImport, validateCSV, templateHeaders, className }: CSVImportProps) {
+export function CSVImport({ onDataImport, validateCSV, templateHeaders, templateName, className }: CSVImportProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -89,12 +90,13 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, classNam
 
   const handleDownloadTemplate = () => {
     const headers = (templateHeaders && templateHeaders.length > 0) ? templateHeaders : ['date','revenue'];
+    const name = templateName ? templateName.toLowerCase().replace(/\s+/g, '-') + '-template.csv' : 'template.csv';
     const csvContent = headers.join(',') + '\n';
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'template.csv';
+    a.download = name;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -111,7 +113,7 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, classNam
       </CardHeader>
       <CardContent className="space-y-4">
         <Button variant="outline" onClick={handleDownloadTemplate} className="mb-2">
-          Download Template
+          Download {templateName ? templateName : 'CSV'} Template
         </Button>
         {!showPreview ? (
           <>

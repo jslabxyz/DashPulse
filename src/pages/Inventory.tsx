@@ -142,7 +142,12 @@ const Inventory = () => {
 
         {/* CSV Import */}
         {showImport && (
-          <CSVImport onDataImport={handleDataImport} validateCSV={validateInventoryCSV} templateHeaders={['sku','product','stock','status','inbound','velocity']} />
+          <>
+            <div className="mb-2 text-sm text-muted-foreground">
+              Required columns: sku, product, stock, status, inbound, velocity
+            </div>
+            <CSVImport onDataImport={handleDataImport} validateCSV={validateInventoryCSV} templateHeaders={['sku','product','stock','status','inbound','velocity']} templateName="Inventory" />
+          </>
         )}
 
         {/* Summary Cards */}

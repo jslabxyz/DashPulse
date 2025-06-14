@@ -83,7 +83,12 @@ const Performance = () => {
 
         {/* CSV Import */}
         {showImport && (
-          <CSVImport onDataImport={handleDataImport} validateCSV={validateSalesCSV} templateHeaders={['date','revenue','unitsSold','orders','conversionRate','averageOrderValue','profitMargin','returns','refunds']} />
+          <>
+            <div className="mb-2 text-sm text-muted-foreground">
+              Required columns: date, revenue, unitsSold, orders, conversionRate, averageOrderValue, profitMargin, returns, refunds
+            </div>
+            <CSVImport onDataImport={handleDataImport} validateCSV={validateSalesCSV} templateHeaders={['date','revenue','unitsSold','orders','conversionRate','averageOrderValue','profitMargin','returns','refunds']} templateName="Sales" />
+          </>
         )}
 
         {/* Sales Summary */}

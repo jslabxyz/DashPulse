@@ -87,7 +87,12 @@ const Stocks = () => {
 
         {/* CSV Import */}
         {showImport && (
-          <CSVImport onDataImport={handleDataImport} validateCSV={validateProductCSV} templateHeaders={['name','sku','asin','revenue','sessions','conversionRate','inventory','unitsSold','profit','acos','status']} />
+          <>
+            <div className="mb-2 text-sm text-muted-foreground">
+              Required columns: name, sku, asin, revenue, sessions, conversionRate, inventory, unitsSold, profit, acos, status
+            </div>
+            <CSVImport onDataImport={handleDataImport} validateCSV={validateProductCSV} templateHeaders={['name','sku','asin','revenue','sessions','conversionRate','inventory','unitsSold','profit','acos','status']} templateName="Product" />
+          </>
         )}
 
         <ProductsSummary products={products} />
