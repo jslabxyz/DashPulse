@@ -1,4 +1,3 @@
-
 export interface SalesData {
   date: string;
   revenue: number;
@@ -142,6 +141,39 @@ export const validateSalesCSV = (data: any[]): boolean => {
   
   return requiredFields.every(field => 
     Object.keys(firstRow).some(key => 
+      key.toLowerCase().includes(field.toLowerCase())
+    )
+  );
+};
+
+export const validateInventoryCSV = (data: any[]): boolean => {
+  if (!data.length) return false;
+  const requiredFields = ['sku', 'product', 'stock', 'status', 'inbound', 'velocity'];
+  const firstRow = data[0];
+  return requiredFields.every(field =>
+    Object.keys(firstRow).some(key =>
+      key.toLowerCase().includes(field.toLowerCase())
+    )
+  );
+};
+
+export const validateProductCSV = (data: any[]): boolean => {
+  if (!data.length) return false;
+  const requiredFields = ['name', 'sku', 'asin', 'revenue', 'sessions', 'conversionRate', 'inventory', 'unitsSold', 'profit', 'acos', 'status'];
+  const firstRow = data[0];
+  return requiredFields.every(field =>
+    Object.keys(firstRow).some(key =>
+      key.toLowerCase().includes(field.toLowerCase())
+    )
+  );
+};
+
+export const validatePPCCampaignCSV = (data: any[]): boolean => {
+  if (!data.length) return false;
+  const requiredFields = ['campaignName', 'campaignType', 'totalOrders', 'totalSales', 'tacos', 'spend', 'sales', 'acos', 'roas', 'impressions', 'clicks', 'cpc', 'cvr', 'ctr', 'ppcOrders', 'status'];
+  const firstRow = data[0];
+  return requiredFields.every(field =>
+    Object.keys(firstRow).some(key =>
       key.toLowerCase().includes(field.toLowerCase())
     )
   );

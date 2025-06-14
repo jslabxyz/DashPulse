@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,10 +7,12 @@ import { cn } from '@/lib/utils';
 
 interface CSVImportProps {
   onDataImport: (data: any[]) => void;
+  validateCSV?: (data: any[]) => boolean;
+  templateHeaders?: string[];
   className?: string;
 }
 
-export function CSVImport({ onDataImport, className }: CSVImportProps) {
+export function CSVImport({ onDataImport, validateCSV, templateHeaders, className }: CSVImportProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -56,10 +57,10 @@ export function CSVImport({ onDataImport, className }: CSVImportProps) {
     try {
       const text = await csvFile.text();
       const data = parseCSV(text);
-      
-      if (!validateSalesCSV(data)) {
+      const validator = validateCSV || validateSalesCSV;
+      if (!validator(data)) {
         setImportStatus('error');
-        setErrorMessage('Invalid CSV format. Please ensure your file contains date and revenue columns.');
+        setErrorMessage('Invalid CSV format. Please ensure your file contains the required columns.');
         return;
       }
 
@@ -86,6 +87,20 @@ export function CSVImport({ onDataImport, className }: CSVImportProps) {
     setImportStatus('idle');
   };
 
+  const handleDownloadTemplate = () => {
+    const headers = (templateHeaders && templateHeaders.length > 0) ? templateHeaders : ['date','revenue'];
+    const csvContent = headers.join(',') + '\n';
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'template.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <Card className={cn("w-full", className)}>
       <CardHeader>
@@ -95,6 +110,9 @@ export function CSVImport({ onDataImport, className }: CSVImportProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <Button variant="outline" onClick={handleDownloadTemplate} className="mb-2">
+          Download Template
+        </Button>
         {!showPreview ? (
           <>
             <div

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PPCSummary } from '@/components/ppc/PPCSummary';
@@ -7,6 +6,7 @@ import { CSVImport } from '@/components/sales/CSVImport';
 import { mockCampaigns, PPCCampaign } from '@/utils/ppcApi';
 import { Button } from '@/components/ui/button';
 import { Download, RefreshCw, Upload } from 'lucide-react';
+import { parseCSV, validatePPCCampaignCSV } from '@/utils/salesApi';
 
 const Markets = () => {
   const [campaigns, setCampaigns] = useState<PPCCampaign[]>(mockCampaigns);
@@ -18,9 +18,13 @@ const Markets = () => {
   };
 
   const handleDataImport = (importedData: any[]) => {
-    console.log('Imported PPC data:', importedData);
-    // In a real app, you would process and merge the imported data
+    if (!validatePPCCampaignCSV(importedData)) {
+      alert('Invalid PPC campaign CSV format.');
+      return;
+    }
+    setCampaigns(importedData);
     setShowImport(false);
+    alert('PPC campaign data imported successfully!');
   };
 
   const handleExportData = () => {
@@ -88,7 +92,7 @@ const Markets = () => {
 
         {/* CSV Import */}
         {showImport && (
-          <CSVImport onDataImport={handleDataImport} />
+          <CSVImport onDataImport={handleDataImport} validateCSV={validatePPCCampaignCSV} templateHeaders={['campaignName','campaignType','totalOrders','totalSales','tacos','spend','sales','acos','roas','impressions','clicks','cpc','cvr','ctr','ppcOrders','status']} />
         )}
 
         <PPCSummary campaigns={campaigns} />

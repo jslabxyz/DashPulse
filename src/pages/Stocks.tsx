@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ProductsTable } from '@/components/products/ProductsTable';
@@ -7,6 +6,7 @@ import { CSVImport } from '@/components/sales/CSVImport';
 import { mockProducts, Product } from '@/utils/productsApi';
 import { Button } from '@/components/ui/button';
 import { Download, RefreshCw, Upload } from 'lucide-react';
+import { parseCSV, validateProductCSV } from '@/utils/salesApi';
 
 const Stocks = () => {
   const [products, setProducts] = useState<Product[]>(mockProducts);
@@ -18,9 +18,13 @@ const Stocks = () => {
   };
 
   const handleDataImport = (importedData: any[]) => {
-    console.log('Imported product data:', importedData);
-    // In a real app, you would process and merge the imported data
+    if (!validateProductCSV(importedData)) {
+      alert('Invalid product CSV format.');
+      return;
+    }
+    setProducts(importedData);
     setShowImport(false);
+    alert('Product data imported successfully!');
   };
 
   const handleExportData = () => {
@@ -83,7 +87,7 @@ const Stocks = () => {
 
         {/* CSV Import */}
         {showImport && (
-          <CSVImport onDataImport={handleDataImport} />
+          <CSVImport onDataImport={handleDataImport} validateCSV={validateProductCSV} templateHeaders={['name','sku','asin','revenue','sessions','conversionRate','inventory','unitsSold','profit','acos','status']} />
         )}
 
         <ProductsSummary products={products} />

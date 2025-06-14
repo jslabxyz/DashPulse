@@ -4,7 +4,7 @@ import { SalesSummary } from '@/components/sales/SalesSummary';
 import { SalesChart } from '@/components/sales/SalesChart';
 import { ProductPerformanceTable } from '@/components/sales/ProductPerformanceTable';
 import { CSVImport } from '@/components/sales/CSVImport';
-import { mockSalesAnalytics, SalesAnalytics } from '@/utils/salesApi';
+import { mockSalesAnalytics, SalesAnalytics, parseCSV, validateSalesCSV } from '@/utils/salesApi';
 import { Button } from '@/components/ui/button';
 import { Download, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,10 +14,16 @@ const Performance = () => {
   const [showImport, setShowImport] = useState(false);
 
   const handleDataImport = (importedData: any[]) => {
-    // In a real app, you would process and merge the imported data
-    console.log('Imported data:', importedData);
-    // For now, we'll just show success and keep mock data
+    if (!validateSalesCSV(importedData)) {
+      alert('Invalid sales CSV format.');
+      return;
+    }
+    setSalesData((prev) => ({
+      ...prev,
+      dailySales: importedData
+    }));
     setShowImport(false);
+    alert('Sales data imported successfully!');
   };
 
   const handleExportData = () => {
@@ -77,7 +83,7 @@ const Performance = () => {
 
         {/* CSV Import */}
         {showImport && (
-          <CSVImport onDataImport={handleDataImport} />
+          <CSVImport onDataImport={handleDataImport} validateCSV={validateSalesCSV} templateHeaders={['date','revenue','unitsSold','orders','conversionRate','averageOrderValue','profitMargin','returns','refunds']} />
         )}
 
         {/* Sales Summary */}

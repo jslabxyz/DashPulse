@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { CSVImport } from '@/components/sales/CSVImport';
@@ -6,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Package, TrendingDown, TrendingUp, Download, RefreshCw, Upload } from 'lucide-react';
+import { parseCSV, validateInventoryCSV } from '@/utils/salesApi';
 
 // Mock inventory data
 const initialInventoryData = [
@@ -78,9 +78,13 @@ const Inventory = () => {
   const totalValue = inventoryData.reduce((sum, item) => sum + (item.stock * 25), 0); // Assuming $25 avg value
 
   const handleDataImport = (importedData: any[]) => {
-    console.log('Imported inventory data:', importedData);
-    // In a real app, you would process and merge the imported data
+    if (!validateInventoryCSV(importedData)) {
+      alert('Invalid inventory CSV format.');
+      return;
+    }
+    setInventoryData(importedData);
     setShowImport(false);
+    alert('Inventory data imported successfully!');
   };
 
   const handleExportData = () => {
@@ -138,7 +142,7 @@ const Inventory = () => {
 
         {/* CSV Import */}
         {showImport && (
-          <CSVImport onDataImport={handleDataImport} />
+          <CSVImport onDataImport={handleDataImport} validateCSV={validateInventoryCSV} templateHeaders={['sku','product','stock','status','inbound','velocity']} />
         )}
 
         {/* Summary Cards */}
