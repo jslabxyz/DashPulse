@@ -79,6 +79,12 @@ const Stocks = () => {
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
+            <Button onClick={() => setProducts([])} variant="outline" color="destructive">
+              Clear Data
+            </Button>
+            <Button onClick={() => setProducts(mockProducts)} variant="outline">
+              Restore Dummy Data
+            </Button>
           </div>
           <div className="text-sm text-muted-foreground">
             Last updated: {new Date().toLocaleString()}

@@ -75,6 +75,12 @@ const Performance = () => {
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
+            <Button onClick={() => setSalesData((prev) => ({ ...prev, dailySales: [] }))} variant="outline" color="destructive">
+              Clear Data
+            </Button>
+            <Button onClick={() => setSalesData(mockSalesAnalytics)} variant="outline">
+              Restore Dummy Data
+            </Button>
           </div>
           <div className="text-sm text-muted-foreground">
             Last updated: {new Date().toLocaleString()}

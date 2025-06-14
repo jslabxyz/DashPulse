@@ -84,6 +84,12 @@ const Markets = () => {
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
+            <Button onClick={() => setCampaigns([])} variant="outline" color="destructive">
+              Clear Data
+            </Button>
+            <Button onClick={() => setCampaigns(mockCampaigns)} variant="outline">
+              Restore Dummy Data
+            </Button>
           </div>
           <div className="text-sm text-muted-foreground">
             Last updated: {new Date().toLocaleString()}
