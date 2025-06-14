@@ -13,7 +13,7 @@ const Performance = () => {
   const [salesData, setSalesData] = useState<SalesAnalytics>(mockSalesAnalytics);
   const [showImport, setShowImport] = useState(false);
 
-  const handleDataImport = (importedData: any[]) => {
+  const handleDataImport = (importedData: any[], timeFrame: string) => {
     if (!validateSalesCSV(importedData)) {
       alert('Invalid sales CSV format.');
       return;
@@ -36,6 +36,8 @@ const Performance = () => {
     }));
     setShowImport(false);
     alert('Sales data imported successfully!');
+    // Optionally use timeFrame here
+    // console.log('Imported with time frame:', timeFrame);
   };
 
   const handleExportData = () => {

@@ -6,7 +6,7 @@ import { parseCSV, validateSalesCSV } from '@/utils/salesApi';
 import { cn } from '@/lib/utils';
 
 interface CSVImportProps {
-  onDataImport: (data: any[]) => void;
+  onDataImport: (data: any[], timeFrame: string) => void;
   validateCSV?: (data: any[]) => boolean;
   templateHeaders?: string[];
   templateName?: string;
@@ -21,6 +21,8 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
   const [previewData, setPreviewData] = useState<any[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [timeFrame, setTimeFrame] = useState('');
+  const [timeFrameError, setTimeFrameError] = useState('');
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -77,9 +79,15 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
   };
 
   const confirmImport = () => {
-    onDataImport(previewData);
+    if (!timeFrame) {
+      setTimeFrameError('Please select a time frame.');
+      return;
+    }
+    setTimeFrameError('');
+    onDataImport(previewData, timeFrame);
     setShowPreview(false);
     setPreviewData([]);
+    setTimeFrame('');
   };
 
   const cancelImport = () => {
@@ -191,6 +199,22 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
               </div>
             </div>
             
+            <div className="mb-2">
+              <label className="block text-sm font-medium mb-1">Time Frame <span className="text-red-500">*</span></label>
+              <select
+                className="w-full px-3 py-2 border rounded-md"
+                value={timeFrame}
+                onChange={e => setTimeFrame(e.target.value)}
+              >
+                <option value="">Select time frame</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="custom">Custom</option>
+              </select>
+              {timeFrameError && <div className="text-xs text-red-500 mt-1">{timeFrameError}</div>}
+            </div>
+
             <div className="flex gap-2">
               <Button onClick={confirmImport} className="flex-1">
                 Import Data

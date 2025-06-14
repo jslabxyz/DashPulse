@@ -77,7 +77,7 @@ const Inventory = () => {
   const criticalItems = inventoryData.filter(item => item.status === 'critical' || item.status === 'out_of_stock');
   const totalValue = inventoryData.reduce((sum, item) => sum + (item.stock * 25), 0); // Assuming $25 avg value
 
-  const handleDataImport = (importedData: any[]) => {
+  const handleDataImport = (importedData: any[], timeFrame: string) => {
     if (!validateInventoryCSV(importedData)) {
       alert('Invalid inventory CSV format.');
       return;
@@ -93,6 +93,8 @@ const Inventory = () => {
     setInventoryData(sanitized);
     setShowImport(false);
     alert('Inventory data imported successfully!');
+    // Optionally use timeFrame here
+    // console.log('Imported with time frame:', timeFrame);
   };
 
   const handleExportData = () => {

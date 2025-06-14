@@ -17,7 +17,7 @@ const Stocks = () => {
     // TODO: Navigate to product detail page or show modal
   };
 
-  const handleDataImport = (importedData: any[]) => {
+  const handleDataImport = (importedData: any[], timeFrame: string) => {
     if (!validateProductCSV(importedData)) {
       alert('Invalid product CSV format.');
       return;
@@ -37,6 +37,8 @@ const Stocks = () => {
     setProducts(sanitized);
     setShowImport(false);
     alert('Product data imported successfully!');
+    // Optionally use timeFrame here
+    // console.log('Imported with time frame:', timeFrame);
   };
 
   const handleExportData = () => {

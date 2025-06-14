@@ -17,7 +17,7 @@ const Markets = () => {
     // TODO: Navigate to campaign detail page or show modal
   };
 
-  const handleDataImport = (importedData: any[]) => {
+  const handleDataImport = (importedData: any[], timeFrame: string) => {
     if (!validatePPCCampaignCSV(importedData)) {
       alert('Invalid PPC campaign CSV format.');
       return;
@@ -43,6 +43,8 @@ const Markets = () => {
     setCampaigns(sanitized);
     setShowImport(false);
     alert('PPC campaign data imported successfully!');
+    // Optionally use timeFrame here
+    // console.log('Imported with time frame:', timeFrame);
   };
 
   const handleExportData = () => {
