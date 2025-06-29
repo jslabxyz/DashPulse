@@ -3,6 +3,13 @@ import { Upload, FileText, CheckCircle, AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { parseCSV, validateSalesCSV } from '@/utils/salesApi';
+import { 
+  validateCSVFile, 
+  safeParseCSV, 
+  DEFAULT_CSV_CONFIG,
+  type CSVConfig 
+} from '@/utils/csvSecurity';
+import { handleError, handleSecurityError, handleValidationError } from '@/utils/errorHandler';
 import { cn } from '@/lib/utils';
 
 interface CSVImportProps {
@@ -11,13 +18,22 @@ interface CSVImportProps {
   templateHeaders?: string[];
   templateName?: string;
   className?: string;
+  csvConfig?: Partial<CSVConfig>;
 }
 
-export function CSVImport({ onDataImport, validateCSV, templateHeaders, templateName, className }: CSVImportProps) {
+export function CSVImport({ 
+  onDataImport, 
+  validateCSV, 
+  templateHeaders, 
+  templateName, 
+  className,
+  csvConfig = {}
+}: CSVImportProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [warningMessages, setWarningMessages] = useState<string[]>([]);
   const [previewData, setPreviewData] = useState<any[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -26,6 +42,11 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
 
+  const finalConfig = {
+    ...DEFAULT_CSV_CONFIG,
+    requiredColumns: templateHeaders || [],
+    ...csvConfig
+  };
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -49,23 +70,64 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
   };
 
   const handleFiles = async (files: File[]) => {
-    const csvFile = files.find(file => file.name.endsWith('.csv'));
+    const csvFile = files[0];
     if (!csvFile) {
       setImportStatus('error');
-      setErrorMessage('Please select a CSV file');
+      setErrorMessage('Please select a file');
       return;
     }
 
+    // Validate file before processing
+    const fileValidation = validateCSVFile(csvFile, finalConfig);
+    if (!fileValidation.isValid) {
+      setImportStatus('error');
+      setErrorMessage(fileValidation.errors.join('. '));
+      handleSecurityError(
+        new Error(`File validation failed: ${fileValidation.errors.join(', ')}`),
+        'CSVImport',
+        'fileValidation'
+      );
+      return;
+    }
+
+    if (fileValidation.warnings.length > 0) {
+      setWarningMessages(fileValidation.warnings);
+    }
     setIsProcessing(true);
     setImportStatus('idle');
+    setErrorMessage('');
+    setWarningMessages([]);
 
     try {
       const text = await csvFile.text();
-      const data = parseCSV(text);
-      const validator = validateCSV || validateSalesCSV;
-      if (!validator(data)) {
+      
+      // Use secure CSV parsing
+      const { data, validation } = safeParseCSV(text, finalConfig);
+      
+      if (!validation.isValid) {
         setImportStatus('error');
-        setErrorMessage('Invalid CSV format. Please ensure your file contains the required columns.');
+        setErrorMessage(validation.errors.join('. '));
+        handleValidationError(
+          new Error(`CSV validation failed: ${validation.errors.join(', ')}`),
+          'csvContent',
+          'CSVImport'
+        );
+        return;
+      }
+
+      if (validation.warnings.length > 0) {
+        setWarningMessages(prev => [...prev, ...validation.warnings]);
+      }
+
+      // Additional custom validation if provided
+      if (validateCSV && !validateCSV(data)) {
+        setImportStatus('error');
+        setErrorMessage('Data validation failed. Please check your file format and try again.');
+        handleValidationError(
+          new Error('Custom validation failed'),
+          'customValidation',
+          'CSVImport'
+        );
         return;
       }
 
@@ -74,7 +136,14 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
       setImportStatus('success');
     } catch (error) {
       setImportStatus('error');
-      setErrorMessage('Failed to parse CSV file');
+      const errorMsg = error instanceof Error ? error.message : 'Failed to parse CSV file';
+      setErrorMessage(errorMsg);
+      handleError(
+        error instanceof Error ? error : new Error(errorMsg),
+        { component: 'CSVImport', action: 'parseFile' },
+        'medium',
+        'validation'
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -89,22 +158,31 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
       setTimeFrameError('Please select a start and end date.');
       return;
     }
+    
+    if (new Date(customStart) > new Date(customEnd)) {
+      setTimeFrameError('Start date must be before end date.');
+      return;
+    }
+    
     setTimeFrameError('');
     const timeFrameValue = timeFrame === 'custom'
       ? { type: 'custom', start: customStart, end: customEnd }
       : timeFrame;
+    
     onDataImport(previewData, timeFrameValue);
     setShowPreview(false);
     setPreviewData([]);
     setTimeFrame('');
     setCustomStart('');
     setCustomEnd('');
+    setWarningMessages([]);
   };
 
   const cancelImport = () => {
     setShowPreview(false);
     setPreviewData([]);
     setImportStatus('idle');
+    setWarningMessages([]);
   };
 
   const handleDownloadTemplate = () => {
@@ -134,6 +212,16 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
         <Button variant="outline" onClick={handleDownloadTemplate} className="mb-2">
           Download {templateName ? templateName : 'CSV'} Template
         </Button>
+        
+        {/* File size and format info */}
+        <div className="text-xs text-gray-500 bg-blue-50 p-2 rounded">
+          <p>Maximum file size: {(finalConfig.maxFileSize / 1024 / 1024).toFixed(1)}MB</p>
+          <p>Maximum rows: {finalConfig.maxRows.toLocaleString()}</p>
+          {finalConfig.requiredColumns.length > 0 && (
+            <p>Required columns: {finalConfig.requiredColumns.join(', ')}</p>
+          )}
+        </div>
+        
         {!showPreview ? (
           <>
             <div
@@ -165,7 +253,7 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
             <input
               ref={fileInputRef}
               type="file"
-              accept=".csv"
+              accept=".csv,.txt"
               onChange={handleFileSelect}
               className="hidden"
             />
@@ -182,6 +270,21 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
                 <X className="h-4 w-4" />
               </Button>
             </div>
+            
+            {/* Show warnings if any */}
+            {warningMessages.length > 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  <span className="text-sm font-medium text-yellow-800">Warnings</span>
+                </div>
+                <ul className="text-xs text-yellow-700 space-y-1">
+                  {warningMessages.map((warning, index) => (
+                    <li key={index}>• {warning}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             
             <div className="border rounded-lg overflow-hidden">
               <div className="overflow-x-auto">
@@ -227,9 +330,22 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
               </select>
               {timeFrame === 'custom' && (
                 <div className="flex gap-2 mt-2">
-                  <input type="date" className="border rounded px-2 py-1" value={customStart} onChange={e => setCustomStart(e.target.value)} />
+                  <input 
+                    type="date" 
+                    className="border rounded px-2 py-1" 
+                    value={customStart} 
+                    onChange={e => setCustomStart(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                  />
                   <span className="self-center">to</span>
-                  <input type="date" className="border rounded px-2 py-1" value={customEnd} onChange={e => setCustomEnd(e.target.value)} />
+                  <input 
+                    type="date" 
+                    className="border rounded px-2 py-1" 
+                    value={customEnd} 
+                    onChange={e => setCustomEnd(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                    min={customStart}
+                  />
                 </div>
               )}
               {timeFrameError && <div className="text-xs text-red-500 mt-1">{timeFrameError}</div>}
@@ -263,6 +379,7 @@ export function CSVImport({ onDataImport, validateCSV, templateHeaders, template
         <div className="text-xs text-gray-500">
           <p className="mb-1">Supported format: CSV files with date and revenue columns</p>
           <p>Common Amazon reports: Business Reports, Settlement Reports</p>
+          <p className="text-red-500">⚠️ Files are automatically scanned for security threats</p>
         </div>
       </CardContent>
     </Card>
